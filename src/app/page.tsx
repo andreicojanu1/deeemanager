@@ -1,6 +1,9 @@
 import { redirect } from 'next/navigation';
+import { homeFor } from '@/lib/session/personas';
+import { getSession } from '@/lib/session/server';
 
-// Temporar, până la pasul 2 (sesiune + middleware): rădăcina duce la pagina de probă a temei.
-export default function Home() {
-  redirect('/dev/tema');
+// Proxy-ul redirecționează deja „/”; aici e doar plasa de siguranță.
+export default async function Home() {
+  const session = await getSession();
+  redirect(session ? homeFor(session) : '/autentificare');
 }

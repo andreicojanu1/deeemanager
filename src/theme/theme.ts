@@ -25,6 +25,8 @@ const shadows = ['none', ...Array<string>(24).fill(shadow.overlay)] as unknown a
 export const theme = createTheme({
   tokens,
   spacing: 4,
+  // 640: tabelele devin carduri; 1024: meniul lateral devine drawer (SPEC-ECRANE §0).
+  breakpoints: { values: { xs: 0, sm: 640, md: 1024, lg: 1280, xl: 1440 } },
   shape: { borderRadius: radius.md },
   shadows,
   palette: {
