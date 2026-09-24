@@ -166,3 +166,5 @@ Lucrează o fază pe rând. La finalul fiecărei faze, oprește-te, rezumă ce a
 - Nu folosești culorile de status sau magenta decorativ; nu adaugi dark mode, emoji sau gradienturi.
 - Nu inventezi reguli legale: dacă o regulă de conformitate nu e clară, lasă un `TODO(validare-client)` și întreabă.
 - Nu rulezi migrații distructive și nu ștergi date fără confirmare.
+
+@AGENTS.md

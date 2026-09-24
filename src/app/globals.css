@@ -1,0 +1,22 @@
+/* Variabilele CSS ale tokenilor, pentru stilurile care nu trec prin tema MUI. */
+@import './fonts.css';
+
+:root {
+  --petrol: #0f4c5c;
+  --petrol-hover: #0b3c49;
+  --petrol-soft: #e3eef0;
+  --ink: #0f1a1f;
+  --ink-muted: #5b6770;
+  --line: #e3e7ea;
+  --line-strong: #c9d0d5;
+  --canvas: #f6f7f7;
+  --surface: #ffffff;
+  --highlight: #fff3b0;
+  color-scheme: light;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
