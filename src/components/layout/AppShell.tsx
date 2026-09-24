@@ -23,13 +23,12 @@ export default function AppShell({ session, nav, children }: Props) {
           width: SIDEBAR_WIDTH,
           flexShrink: 0,
           borderRight: `1px solid ${color.line}`,
-          position: 'sticky',
-          top: 0,
-          height: '100dvh',
           bgcolor: color.surface,
         }}
       >
-        <Sidebar items={nav} session={session} />
+        <Box sx={{ position: 'sticky', top: 0, height: '100dvh' }}>
+          <Sidebar items={nav} session={session} />
+        </Box>
       </Box>
 
       <Drawer

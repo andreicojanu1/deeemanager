@@ -330,6 +330,10 @@ export const theme = createTheme({
         tooltip: { backgroundColor: color.ink, ...typeStyle(t.caption), borderRadius: radius.sm },
       },
     },
+    MuiSkeleton: {
+      defaultProps: { animation: 'wave' },
+      styleOverrides: { root: { backgroundColor: color.line }, rounded: { borderRadius: radius.lg } },
+    },
     MuiDivider: {
       styleOverrides: { root: { borderColor: color.line } },
     },

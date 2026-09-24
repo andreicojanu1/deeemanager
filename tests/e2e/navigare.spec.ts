@@ -26,7 +26,10 @@ test('colectorul activ ajunge pe panou și navighează prin meniu', async ({ pag
   await faraProblemeA11y(page);
 
   if (isMobile) await page.getByRole('button', { name: 'Deschide meniul' }).click();
-  await page.getByRole('link', { name: 'Loturi' }).click();
+  await page
+    .getByRole('navigation', { name: 'Meniu principal' })
+    .getByRole('link', { name: 'Loturi', exact: true })
+    .click();
   await expect(page).toHaveURL(/\/loturi$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Loturi' })).toBeVisible();
 
@@ -46,7 +49,7 @@ test('adminul vede meniul de admin, cu badge-ul cozii, și se poate deloga', asy
   await expect(page).toHaveURL(/\/admin$/);
   if (isMobile) await page.getByRole('button', { name: 'Deschide meniul' }).click();
   const verificari = page.getByRole('link', { name: /Verificări/ });
-  await expect(verificari).toContainText('12');
+  await expect(verificari).toContainText(/\d+/);
   await verificari.click();
   await expect(page.getByRole('heading', { level: 1, name: 'Coada de verificare' })).toBeVisible();
   await faraProblemeA11y(page);

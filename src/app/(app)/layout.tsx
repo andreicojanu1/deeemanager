@@ -1,13 +1,14 @@
 import AppShell from '@/components/layout/AppShell';
 import { navFor } from '@/components/layout/nav';
-import { numarInCoada } from '@/lib/mock/verificari';
+import { contextDin, data } from '@/lib/data';
 import { requireSession } from '@/lib/session/server';
 
 export default async function AppLayout({ children }: LayoutProps<'/'>) {
   const session = await requireSession();
-  const nav = navFor(session, { verificariInCoada: session.rol === 'ADMIN' ? await numarInCoada() : 0 });
+  const verificariInCoada =
+    session.rol === 'ADMIN' ? await data.verificari.numarInCoada(contextDin(session)) : 0;
   return (
-    <AppShell session={session} nav={nav}>
+    <AppShell session={session} nav={navFor(session, { verificariInCoada })}>
       {children}
     </AppShell>
   );
