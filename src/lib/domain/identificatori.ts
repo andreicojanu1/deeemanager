@@ -37,3 +37,14 @@ export function mascheaza(valoare: string): string {
   const v = valoare.replace(/\s+/g, '');
   return v.length <= 4 ? v : `•••• ${v.slice(-4)}`;
 }
+
+/** IBAN românesc: RO + 2 cifre de control + 4 litere bancă + 16 caractere; verificare mod 97. */
+export function ibanValid(input: string): boolean {
+  const iban = input.replace(/\s+/g, '').toUpperCase();
+  if (!/^RO\d{2}[A-Z]{4}[A-Z0-9]{16}$/.test(iban)) return false;
+  const mutat = iban.slice(4) + iban.slice(0, 4);
+  const cifre = mutat.replace(/[A-Z]/g, (c) => String(c.charCodeAt(0) - 55));
+  let rest = 0;
+  for (const ch of cifre) rest = (rest * 10 + Number(ch)) % 97;
+  return rest === 1;
+}

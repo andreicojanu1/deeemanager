@@ -12,6 +12,12 @@ import type {
   RandLot,
   StocCategorie,
 } from '@/lib/domain/panou';
+import type {
+  DateFirma,
+  ExtrasAutorizatie,
+  Onboarding,
+  TipDocumentOnboarding,
+} from '@/lib/domain/onboarding';
 import type { Rol } from '@/lib/session/types';
 
 /**
@@ -62,6 +68,25 @@ export interface DataLayer {
     ): Promise<{ numar: string; coduriAutorizate: string[]; puncteLucru: string[] }>;
     /** Codurile de deșeu permise pe categorie (din taxonomie). */
     coduriPeCategorie(): Promise<Record<number, string[]>>;
+  };
+  onboarding: {
+    /** Dosarul de activare al organizației din sesiune. */
+    get(ctx: DataContext): Promise<Onboarding>;
+    /** Autosalvarea datelor firmei (doar în etapa Documente). */
+    salveazaFirma(ctx: DataContext, firma: DateFirma): Promise<{ salvatLa: string }>;
+    /** Înregistrează fișierul încărcat; la autorizația de mediu pornește extragerea. */
+    incarcaDocument(
+      ctx: DataContext,
+      tip: TipDocumentOnboarding,
+      fisier: { nume: string; marime: string },
+    ): Promise<Onboarding>;
+    /** Colectorul confirmă sau corectează datele extrase din autorizație. */
+    confirmaAutorizatie(
+      ctx: DataContext,
+      extras: Omit<ExtrasAutorizatie, 'confirmat' | 'corectat'>,
+    ): Promise<Onboarding>;
+    /** Trimite dosarul complet la verificare. */
+    trimite(ctx: DataContext): Promise<Onboarding>;
   };
   anaf: {
     /** Datele firmei după CUI; null dacă nu există. */

@@ -1,20 +1,15 @@
 import type { Metadata } from 'next';
-import PageHeader from '@/components/layout/PageHeader';
-import InLucru from '@/components/ui/InLucru';
+import { redirect } from 'next/navigation';
+import Onboarding from '@/features/onboarding/Onboarding';
+import { contextDin, data } from '@/lib/data';
+import { requireSession } from '@/lib/session/server';
 
 export const metadata: Metadata = { title: 'Activează-ți contul' };
 
-export default function Page() {
-  return (
-    <>
-      <PageHeader
-        title="Activează-ți contul"
-        subtitle="Încarcă documentele firmei ca să poți trimite loturi."
-      />
-      <InLucru
-        pas={9}
-        descriere="Stepper-ul de activare, datele firmei din ANAF și documentele de onboarding."
-      />
-    </>
-  );
+export default async function Page() {
+  const session = await requireSession();
+  if (session.rol !== 'COLECTOR') redirect('/admin');
+  if (session.statusCont === 'ACTIV') redirect('/panou');
+  const initial = await data.onboarding.get(contextDin(session));
+  return <Onboarding initial={initial} />;
 }

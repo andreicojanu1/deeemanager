@@ -20,6 +20,14 @@ import { CODURI_DESEU } from './seed/coduri';
 import { detaliuLot, verificareDin } from './seed/detalii';
 import { randCoada, sorteazaCoada } from '@/lib/domain/coada';
 import { construiesteRaport } from './raport';
+import { documentValid, extrasAutorizatieMock, onboardingPentru, salveazaOnboarding } from './onboarding';
+import {
+  DateFirmaSchema,
+  ExtrasAutorizatieSchema,
+  normalizeazaIban,
+  poateTrimite,
+  ceLipseste,
+} from '@/lib/domain/onboarding';
 import { DOCUMENTE_ORGANIZATIE, LOTURI, MOCK_NOW } from './seed/loturi';
 import { CATEGORII, SUBCATEGORII, subcategorie } from './seed/taxonomie';
 
@@ -231,6 +239,71 @@ export const mockData: DataLayer = {
     },
     async coduriPeCategorie() {
       return CODURI_PE_CATEGORIE;
+    },
+  },
+
+  onboarding: {
+    async get(ctx) {
+      return structuredClone(onboardingPentru(ctx.organizatieId));
+    },
+    async salveazaFirma(ctx, firma) {
+      const o = onboardingPentru(ctx.organizatieId);
+      if (o.etapa !== 'DOCUMENTE') throw new Error('Dosarul e trimis; datele nu se mai pot modifica.');
+      const f = DateFirmaSchema.parse(firma);
+      // Denumirea și adresa sediului vin doar din ANAF.
+      const anaf = f.cuiVerificatAnaf ? await mockData.anaf.cauta(f.cui) : null;
+      o.firma = {
+        ...f,
+        cuiVerificatAnaf: Boolean(anaf),
+        denumire: anaf?.denumire ?? '',
+        adresaSediu: anaf?.adresa ?? '',
+        iban: normalizeazaIban(f.iban),
+      };
+      o.salvatLa = now().toISOString();
+      salveazaOnboarding(o);
+      return { salvatLa: o.salvatLa };
+    },
+    async incarcaDocument(ctx, tip, fisier) {
+      const o = onboardingPentru(ctx.organizatieId);
+      if (o.etapa !== 'DOCUMENTE') throw new Error('Dosarul e trimis; documentele nu se mai pot înlocui.');
+      if (!documentValid(tip)) throw new Error('Tipul de document nu există.');
+      const d = o.documente.find((x) => x.tip === tip)!;
+      if (d.stare === 'APROBAT') throw new Error('Documentul e deja aprobat.');
+      d.stare = 'INCARCAT';
+      d.motiv = undefined;
+      d.fisier = {
+        nume: fisier.nume.slice(0, 200),
+        marime: fisier.marime.slice(0, 20),
+        incarcatLa: now().toISOString(),
+      };
+      if (tip === 'AUTORIZATIE_MEDIU') o.autorizatie = extrasAutorizatieMock();
+      salveazaOnboarding(o);
+      return structuredClone(o);
+    },
+    async confirmaAutorizatie(ctx, extras) {
+      const o = onboardingPentru(ctx.organizatieId);
+      if (o.etapa !== 'DOCUMENTE') throw new Error('Dosarul e trimis; datele nu se mai pot modifica.');
+      if (!o.autorizatie) throw new Error('Încarcă întâi autorizația de mediu.');
+      const e = ExtrasAutorizatieSchema.parse(extras);
+      const a = o.autorizatie;
+      const corectat =
+        a.corectat ||
+        e.numar !== a.numar ||
+        e.emitent !== a.emitent ||
+        e.valabilPana !== a.valabilPana ||
+        e.coduri.join() !== a.coduri.join();
+      o.autorizatie = { ...e, confirmat: true, corectat };
+      salveazaOnboarding(o);
+      return structuredClone(o);
+    },
+    async trimite(ctx) {
+      const o = onboardingPentru(ctx.organizatieId);
+      if (!poateTrimite(o)) throw new Error(`Mai ai de completat: ${ceLipseste(o).join(', ')}.`);
+      o.etapa = 'IN_VERIFICARE';
+      o.trimisLa = now().toISOString();
+      for (const d of o.documente) if (d.stare === 'INCARCAT') d.stare = 'DE_VERIFICAT';
+      salveazaOnboarding(o);
+      return structuredClone(o);
     },
   },
 
