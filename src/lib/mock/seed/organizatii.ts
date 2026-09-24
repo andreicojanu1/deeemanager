@@ -27,5 +27,5 @@ export const AUTORIZATII: Record<string, AutorizatieMock> = {
 /** Răspunsuri simulate ale serviciului ANAF (Faza B: apel real). */
 export const ANAF: Record<string, { denumire: string; adresa: string }> = {
   '18244571': { denumire: 'Hotel Parc Central SRL', adresa: 'Str. Fabricii 12, Chiajna, Ilfov' },
-  '30118904': { denumire: 'EcoRec Ilfov SRL', adresa: 'Șos. Oltenitei 208, Popești-Leordeni' },
+  '30118904': { denumire: 'EcoRec Ilfov SRL', adresa: 'Șos. Olteniței 208, Popești-Leordeni' },
 };
