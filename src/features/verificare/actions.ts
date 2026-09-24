@@ -10,6 +10,7 @@ const DecizieSchema = z
     id: z.string().regex(/^LOT-\d{4}-\d{4}$/),
     decizie: z.enum(['ACCEPTAT', 'NECESITA_COMPLETARI', 'RESPINS']),
     motiv: z.string().trim().max(1000),
+    documenteDeInlocuit: z.array(z.string().max(80)).max(30).optional(),
   })
   .refine((d) => d.decizie === 'ACCEPTAT' || d.motiv.length >= 10, {
     message: 'Scrie colectorului ce are de făcut (cel puțin 10 caractere).',
@@ -20,6 +21,7 @@ export async function decideLot(input: {
   id: string;
   decizie: 'ACCEPTAT' | 'NECESITA_COMPLETARI' | 'RESPINS';
   motiv: string;
+  documenteDeInlocuit?: string[];
 }): Promise<{ ok: true } | { ok: false; eroare: string }> {
   const parsed = DecizieSchema.safeParse(input);
   if (!parsed.success) return { ok: false, eroare: parsed.error.issues[0].message };
@@ -32,6 +34,7 @@ export async function decideLot(input: {
       parsed.data.decizie,
       parsed.data.motiv,
       session.utilizator.nume,
+      parsed.data.documenteDeInlocuit,
     );
   } catch (e) {
     return { ok: false, eroare: e instanceof Error ? e.message : 'Decizia nu s-a salvat.' };

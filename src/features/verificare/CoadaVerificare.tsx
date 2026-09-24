@@ -502,7 +502,13 @@ function Tasta({ children, label }: { children: React.ReactNode; label?: string 
       {label ? (
         <Box
           component="span"
-          sx={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0 0 0 0)' }}
+          sx={{
+            position: 'absolute',
+            width: '1px',
+            height: '1px',
+            overflow: 'hidden',
+            clip: 'rect(0 0 0 0)',
+          }}
         >
           {label}
         </Box>

@@ -3,6 +3,7 @@ import type { Decizie, RandCoada } from '@/lib/domain/coada';
 import type { FiltreLoturi } from '@/lib/domain/filtre';
 import type { CodDeseu, LotDetaliu } from '@/lib/domain/lot';
 import type { NodArbore, PaginaLoturi } from '@/lib/domain/loturi';
+import type { DocumentVizual, RegulaRaport } from '@/lib/domain/raport';
 import type { Categorie, Subcategorie } from '@/lib/domain/taxonomie';
 import type {
   ElementDeRezolvat,
@@ -87,6 +88,20 @@ export interface DataLayer {
       decizie: Decizie,
       motiv: string,
       deciziaDe: string,
+      /** La „Necesită completări”: documentele bifate; implicit cele lipsă sau de verificat. */
+      documenteDeInlocuit?: string[],
     ): Promise<void>;
+    /** Doar admin: raportul de verificare al lotului; null dacă lotul nu există. */
+    raport(
+      ctx: DataContext,
+      lotId: string,
+    ): Promise<{
+      lot: LotDetaliu;
+      colector: string;
+      reguli: RegulaRaport[];
+      documente: DocumentVizual[];
+      /** Următorul lot din coadă, pentru trecerea automată după decizie. */
+      urmatorul: string | null;
+    } | null>;
   };
 }

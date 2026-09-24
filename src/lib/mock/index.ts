@@ -19,6 +19,7 @@ import { ANAF, AUTORIZATII, NUME_ORGANIZATIE } from './seed/organizatii';
 import { CODURI_DESEU } from './seed/coduri';
 import { detaliuLot, verificareDin } from './seed/detalii';
 import { randCoada, sorteazaCoada } from '@/lib/domain/coada';
+import { construiesteRaport } from './raport';
 import { DOCUMENTE_ORGANIZATIE, LOTURI, MOCK_NOW } from './seed/loturi';
 import { CATEGORII, SUBCATEGORII, subcategorie } from './seed/taxonomie';
 
@@ -275,7 +276,22 @@ export const mockData: DataLayer = {
         timpMediuDecizieMin: durate.length ? durate.reduce((a, b) => a + b, 0) / durate.length : null,
       };
     },
-    async decide(ctx, lotId, decizie, motiv, deciziaDe) {
+    async raport(ctx, lotId) {
+      doarAdmin(ctx);
+      await asteapta();
+      const g = gaseste(ctx, lotId);
+      if (!g || g.lot.status === 'CIORNA' || g.lot.status === 'ANULAT') return null;
+      const colector = numeColector(g.lot.organizatieId);
+      const coada = sorteazaCoada(
+        LOTURI.filter((l) => l.status === 'IN_VERIFICARE').map((l) =>
+          randCoada(l, '', gaseste(ctx, l.id)!.detaliu.verificare),
+        ),
+      ).map((r) => r.id);
+      const i = coada.indexOf(lotId);
+      const urmatorul = (i >= 0 ? [...coada.slice(i + 1), ...coada.slice(0, i)] : coada)[0] ?? null;
+      return { lot: g.detaliu, colector, ...construiesteRaport(g.detaliu, colector), urmatorul };
+    },
+    async decide(ctx, lotId, decizie, motiv, deciziaDe, documenteDeInlocuit) {
       doarAdmin(ctx);
       const g = gaseste(ctx, lotId);
       if (!g) throw new Error('Lotul nu există.');
@@ -288,9 +304,11 @@ export const mockData: DataLayer = {
       if (g.detaliu.verificare) g.detaliu.verificare.decizie = { status: decizie, de: deciziaDe, la };
       if (decizie === 'NECESITA_COMPLETARI') {
         // Documentele de înlocuit: cele marcate „de verificat” sau lipsă.
-        g.detaliu.deInlocuit = g.detaliu.documente
-          .filter((d) => d.status === 'DE_VERIFICAT' || d.status === 'LIPSA')
-          .map((d) => d.id);
+        g.detaliu.deInlocuit = documenteDeInlocuit?.length
+          ? g.detaliu.documente.filter((d) => documenteDeInlocuit.includes(d.id)).map((d) => d.id)
+          : g.detaliu.documente
+              .filter((d) => d.status === 'DE_VERIFICAT' || d.status === 'LIPSA')
+              .map((d) => d.id);
         for (const d of g.detaliu.documente)
           if (g.detaliu.deInlocuit.includes(d.id)) d.status = 'DE_INLOCUIT';
       }
