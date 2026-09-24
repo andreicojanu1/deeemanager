@@ -15,9 +15,10 @@ import { cuiValid, normalizeazaCui } from '@/lib/domain/identificatori';
 import { poateAnula, poateEdita, poateRetrimite } from '@/lib/domain/tranzitii';
 import { ciornaDinDetaliu, contextValidare, detaliuDinCiorna, liniiDinCiorna } from './ciorne';
 import { CODURI_PE_CATEGORIE } from './seed/coduri';
-import { ANAF, AUTORIZATII } from './seed/organizatii';
+import { ANAF, AUTORIZATII, NUME_ORGANIZATIE } from './seed/organizatii';
 import { CODURI_DESEU } from './seed/coduri';
-import { detaliuLot } from './seed/detalii';
+import { detaliuLot, verificareDin } from './seed/detalii';
+import { randCoada, sorteazaCoada } from '@/lib/domain/coada';
 import { DOCUMENTE_ORGANIZATIE, LOTURI, MOCK_NOW } from './seed/loturi';
 import { CATEGORII, SUBCATEGORII, subcategorie } from './seed/taxonomie';
 
@@ -25,15 +26,20 @@ import { CATEGORII, SUBCATEGORII, subcategorie } from './seed/taxonomie';
 const LATENTA_MS = process.env.NODE_ENV === 'test' ? 0 : 250;
 const asteapta = () => new Promise((r) => setTimeout(r, LATENTA_MS));
 
-export const now = () => new Date(MOCK_NOW);
-const acumIso = () => new Date().toISOString().slice(0, 19);
+/**
+ * Ceasul datelor mock: pornește la MOCK_NOW (24.09.2026, 10:00) și avansează în timp
+ * real, ca vechimea în coadă și deciziile să fie coerente cu datele seed.
+ */
+const PORNIRE = Date.now();
+export const now = () => new Date(new Date(MOCK_NOW).getTime() + (Date.now() - PORNIRE));
+const acumIso = () => {
+  const d = now();
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+};
 
 const tx = { categorii: CATEGORII, subcategorie };
 
-const NUME_ORGANIZATIE: Record<string, string> = {
-  'org-colector-demo': 'Colector Demo SRL',
-  'org-reciclare-nord': 'Reciclare Nord SRL',
-};
 const numeColector = (id: string) => NUME_ORGANIZATIE[id] ?? id;
 
 /**
@@ -193,7 +199,10 @@ export const mockData: DataLayer = {
         },
         ...g.detaliu.istoric,
       ];
-      detalii.set(id, detaliuDinCiorna(g.lot, c, istoric));
+      const detaliu = detaliuDinCiorna(g.lot, c, istoric);
+      // Faza A: verificarea automată e simulată; în Faza C o produce pipeline-ul AI.
+      detaliu.verificare = verificareDin(g.lot);
+      detalii.set(id, detaliu);
     },
     async retrimite(ctx, id) {
       const g = gaseste(ctx, id);
@@ -238,6 +247,59 @@ export const mockData: DataLayer = {
     async numarInCoada(ctx) {
       doarAdmin(ctx);
       return LOTURI.filter((l) => l.status === 'IN_VERIFICARE').length;
+    },
+    async coada(ctx) {
+      doarAdmin(ctx);
+      await asteapta();
+      const azi = acumIso().slice(0, 10);
+      const rand = (id: string) => {
+        const g = gaseste(ctx, id)!;
+        return randCoada(g.lot, numeColector(g.lot.organizatieId), g.detaliu.verificare);
+      };
+      const deciseAzi = LOTURI.filter(
+        (l) =>
+          l.decisLa?.startsWith(azi) && ['ACCEPTAT', 'RESPINS', 'NECESITA_COMPLETARI'].includes(l.status),
+      );
+      const durate = deciseAzi.map(
+        (l) => (new Date(l.decisLa!).getTime() - new Date(l.trimisLa ?? l.creatLa).getTime()) / 60_000,
+      );
+      return {
+        deVerificat: sorteazaCoada(LOTURI.filter((l) => l.status === 'IN_VERIFICARE').map((l) => rand(l.id))),
+        asteaptaColectorul: LOTURI.filter((l) => l.status === 'NECESITA_COMPLETARI')
+          .map((l) => rand(l.id))
+          .sort((a, b) => (b.decisLa ?? '').localeCompare(a.decisLa ?? '')),
+        deciseAzi: deciseAzi
+          .map((l) => rand(l.id))
+          .sort((a, b) => (b.decisLa ?? '').localeCompare(a.decisLa ?? '')),
+        acum: acumIso(),
+        timpMediuDecizieMin: durate.length ? durate.reduce((a, b) => a + b, 0) / durate.length : null,
+      };
+    },
+    async decide(ctx, lotId, decizie, motiv, deciziaDe) {
+      doarAdmin(ctx);
+      const g = gaseste(ctx, lotId);
+      if (!g) throw new Error('Lotul nu există.');
+      if (g.lot.status !== 'IN_VERIFICARE') throw new Error('Lotul a fost deja decis.');
+      if (decizie !== 'ACCEPTAT' && !motiv.trim()) throw new Error('Scrie motivul pentru colector.');
+      const la = acumIso();
+      g.lot.status = decizie;
+      g.lot.decisLa = la;
+      g.lot.motiv = decizie === 'ACCEPTAT' ? undefined : motiv.trim();
+      if (g.detaliu.verificare) g.detaliu.verificare.decizie = { status: decizie, de: deciziaDe, la };
+      if (decizie === 'NECESITA_COMPLETARI') {
+        // Documentele de înlocuit: cele marcate „de verificat” sau lipsă.
+        g.detaliu.deInlocuit = g.detaliu.documente
+          .filter((d) => d.status === 'DE_VERIFICAT' || d.status === 'LIPSA')
+          .map((d) => d.id);
+        for (const d of g.detaliu.documente)
+          if (g.detaliu.deInlocuit.includes(d.id)) d.status = 'DE_INLOCUIT';
+      }
+      const actiune = {
+        ACCEPTAT: 'A acceptat lotul',
+        NECESITA_COMPLETARI: 'A cerut completări',
+        RESPINS: 'A respins lotul',
+      }[decizie];
+      g.detaliu.istoric.unshift({ la, autor: deciziaDe, actiune, detaliu: g.lot.motiv });
     },
   },
 };

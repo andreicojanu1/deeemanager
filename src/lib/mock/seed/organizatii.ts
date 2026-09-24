@@ -1,4 +1,11 @@
-import { ORG_ALT, ORG_DEMO } from './loturi';
+import { ORG_ALT, ORG_DEMO, ORG_ECOTRANS, ORG_GREENPOINT } from './loturi';
+
+export const NUME_ORGANIZATIE: Record<string, string> = {
+  [ORG_DEMO]: 'Colector Demo SRL',
+  [ORG_ALT]: 'Reciclare Nord SRL',
+  [ORG_GREENPOINT]: 'GreenPoint SRL',
+  [ORG_ECOTRANS]: 'EcoTrans Vest SRL',
+};
 
 export type AutorizatieMock = {
   numar: string;

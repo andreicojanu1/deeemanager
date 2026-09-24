@@ -267,10 +267,73 @@ const ALT_COLECTOR: Lot[] = [
   },
 ];
 
+// ── Coada de verificare (mockup 04): loturi ale altor colectori ───────────────────
+export const ORG_GREENPOINT = 'org-greenpoint';
+export const ORG_ECOTRANS = 'org-ecotrans-vest';
+
+const inCoada = (
+  id: string,
+  organizatieId: string,
+  punctLucru: string,
+  trimisLa: string,
+  linii: LinieLot[],
+): Lot => ({
+  id,
+  organizatieId,
+  status: 'IN_VERIFICARE',
+  punctLucru,
+  dataPreluarii: trimisLa.slice(0, 10),
+  linii,
+  creatLa: plus(trimisLa, -1),
+  trimisLa,
+});
+
+const decisAzi = (
+  id: string,
+  organizatieId: string,
+  status: 'ACCEPTAT' | 'RESPINS' | 'NECESITA_COMPLETARI',
+  trimisLa: string,
+  oreDecizie: number,
+  linii: LinieLot[],
+  motiv?: string,
+): Lot => ({
+  ...inCoada(id, organizatieId, 'Depozit', trimisLa, linii),
+  status,
+  decisLa: plus(trimisLa, oreDecizie),
+  motiv,
+});
+
+const COADA: Lot[] = [
+  inCoada('LOT-2026-0413', ORG_GREENPOINT, 'Cluj-Napoca', '2026-09-24T03:35:00', [linie('4.1', 1980, 28)]),
+  inCoada('LOT-2026-0411', ORG_ALT, 'Suceava', '2026-09-23T07:58:00', [linie('2.3', 412, 58)]),
+  inCoada('LOT-2026-0410', ORG_ECOTRANS, 'Arad', '2026-09-23T04:55:00', [
+    linie('1.1', 1620, 23, '20 01 23*'),
+    linie('2.4', 640, 91, '20 01 35*'),
+  ]),
+  inCoada('LOT-2026-0408', ORG_GREENPOINT, 'Cluj-Napoca', '2026-09-23T02:50:00', [linie('6.1', 96, 610)]),
+  inCoada('LOT-2026-0405', ORG_ECOTRANS, 'Arad', '2026-09-24T05:20:00', [
+    linie('4.2', 3410, 52, '20 01 35*'),
+  ]),
+  inCoada('LOT-2026-0403', ORG_ALT, 'Suceava', '2026-09-24T06:58:00', [linie('5.1', 86, 7)]),
+  inCoada('LOT-2026-0401', ORG_GREENPOINT, 'Cluj-Napoca', '2026-09-24T04:49:00', [linie('5.2', 725, 81)]),
+  decisAzi('LOT-2026-0400', ORG_ECOTRANS, 'ACCEPTAT', '2026-09-23T15:10:00', 17.2, [linie('4.3', 540, 11)]),
+  decisAzi('LOT-2026-0399', ORG_GREENPOINT, 'ACCEPTAT', '2026-09-23T16:40:00', 16.1, [linie('2.2', 118, 47)]),
+  decisAzi(
+    'LOT-2026-0398',
+    ORG_ALT,
+    'NECESITA_COMPLETARI',
+    '2026-09-23T17:05:00',
+    15.3,
+    [linie('4.5', 610, 15)],
+    'Lipsește procesul-verbal de recepție. Încarcă-l semnat de ambele părți.',
+  ),
+];
+
 export const LOTURI: Lot[] = [
   ...RECENTE,
   ...genereazaIstoric(RECENTE.filter((l) => l.status === 'ACCEPTAT')),
   ...ALT_COLECTOR,
+  ...COADA,
 ];
 
 export const DOCUMENTE_ORGANIZATIE: DocumentOrganizatie[] = [

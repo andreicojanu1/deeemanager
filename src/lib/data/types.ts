@@ -1,4 +1,5 @@
 import type { Ciorna } from '@/lib/domain/ciorna';
+import type { Decizie, RandCoada } from '@/lib/domain/coada';
 import type { FiltreLoturi } from '@/lib/domain/filtre';
 import type { CodDeseu, LotDetaliu } from '@/lib/domain/lot';
 import type { NodArbore, PaginaLoturi } from '@/lib/domain/loturi';
@@ -70,5 +71,22 @@ export interface DataLayer {
   };
   verificari: {
     numarInCoada(ctx: DataContext): Promise<number>;
+    /** Doar admin: cele trei tab-uri ale cozii și timpul mediu până la decizie azi. */
+    coada(ctx: DataContext): Promise<{
+      deVerificat: RandCoada[];
+      asteaptaColectorul: RandCoada[];
+      deciseAzi: RandCoada[];
+      /** Ora curentă a stratului de date, pentru vechimea în coadă. */
+      acum: string;
+      timpMediuDecizieMin: number | null;
+    }>;
+    /** Doar admin: decizia pe un lot în verificare. Salvează adminul, ora și regulamentul. */
+    decide(
+      ctx: DataContext,
+      lotId: string,
+      decizie: Decizie,
+      motiv: string,
+      deciziaDe: string,
+    ): Promise<void>;
   };
 }

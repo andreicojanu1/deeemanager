@@ -33,7 +33,10 @@ import { acumRelativ, marimeFisier } from './util';
 type Props = { initial: Ciorna; tx: Taxonomie; pasInitial?: Pas };
 
 type StareSalvare =
-  { tip: 'nesalvat' } | { tip: 'salvare' } | { tip: 'salvat'; la: Date | null } | { tip: 'eroare'; mesaj: string };
+  | { tip: 'nesalvat' }
+  | { tip: 'salvare' }
+  | { tip: 'salvat'; la: Date | null }
+  | { tip: 'eroare'; mesaj: string };
 
 const AUTOSALVARE_MS = 800;
 

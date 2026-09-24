@@ -139,7 +139,10 @@ function istoricImplicit(lot: Lot, verificare?: Verificare): EvenimentIstoric[] 
   return ev.sort((a, b) => b.la.localeCompare(a.la));
 }
 
-function verificareDin(lot: Lot, semafor: Partial<Record<string, [Semafor, string]>> = {}): Verificare {
+export function verificareDin(
+  lot: Lot,
+  semafor: Partial<Record<string, [Semafor, string]>> = {},
+): Verificare {
   const total = kg(totalKg(lot));
   const implicit: Record<string, string> = {
     R01: 'Toate documentele cerute',
@@ -183,10 +186,23 @@ export function detaliuLot(lot: Lot): LotDetaliu {
   return detaliuGeneric(lot);
 }
 
+/** Rezultatele regulilor pentru loturile din coada de verificare (mockup 04). */
+const SEMAFOARE: Record<string, Partial<Record<string, [Semafor, string]>>> = {
+  'LOT-2026-0417': { R11: ['ROSU', 'Fotografiile arată altă categorie decât cea declarată'] },
+  'LOT-2026-0405': { R08: ['GALBEN', 'PV recepție datat înaintea avizului'] },
+  'LOT-2026-0410': {
+    R08: ['GALBEN', 'Anexa 3 datată după recepție'],
+    R09: ['GALBEN', '70,4 kg / buc · peste pragul 1.1'],
+  },
+  'LOT-2026-0398': { R01: ['ROSU', '6 din 7 documente · lipsește PV recepție'] },
+};
+
 function detaliuGeneric(lot: Lot): LotDetaliu {
   const surse = surseImplicite(lot);
   const trimis = lot.status !== 'CIORNA';
-  let verificare = trimis && lot.status !== 'ANULAT' ? verificareDin(lot) : undefined;
+  let verificare = trimis && lot.status !== 'ANULAT' ? verificareDin(lot, SEMAFOARE[lot.id]) : undefined;
+  // Verdictul propus urmează semaforul: roșu la fotografii → respingere.
+  if (verificare && SEMAFOARE[lot.id]?.R11?.[0] === 'ROSU') verificare.verdictPropus = 'RESPINS';
   if (verificare && lot.status === 'RESPINS') {
     verificare = verificareDin(lot, {
       R11: ['ROSU', 'Fotografiile arată alte echipamente'],

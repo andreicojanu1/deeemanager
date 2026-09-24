@@ -46,7 +46,8 @@ describe('izolarea datelor între organizații', () => {
     const demo = await mockData.panou.colector(colector);
     const alt = await mockData.panou.colector({ organizatieId: ORG_ALT, rol: 'COLECTOR' });
     expect(demo.ultimeleLoturi.map((l) => l.id)).not.toContain('LOT-2026-0417');
-    expect(alt.ultimeleLoturi.map((l) => l.id)).toEqual(['LOT-2026-0417', 'LOT-2026-0402']);
+    expect(alt.ultimeleLoturi.map((l) => l.id)).toContain('LOT-2026-0417');
+    expect(alt.ultimeleLoturi.map((l) => l.id)).not.toContain('LOT-2026-0418');
     expect(alt.stoc.totalKg).toBe(1150);
   });
 
@@ -59,6 +60,6 @@ describe('izolarea datelor între organizații', () => {
 
   it('coada de verificare e doar pentru admin', async () => {
     await expect(mockData.verificari.numarInCoada(colector)).rejects.toThrow('Acces interzis');
-    await expect(mockData.verificari.numarInCoada({ organizatieId: 'x', rol: 'ADMIN' })).resolves.toBe(2);
+    await expect(mockData.verificari.numarInCoada({ organizatieId: 'x', rol: 'ADMIN' })).resolves.toBe(9);
   });
 });
