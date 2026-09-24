@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { faraScrollOrizontal } from './util';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/autentificare');
@@ -14,8 +15,7 @@ test('panoul arată blocurile din mockup, fără scroll orizontal și fără pro
   await expect(page.getByText('Total 16.771 kg · 41 loturi acceptate')).toBeVisible();
   await expect(page.getByText('3.410 kg', { exact: true })).toBeVisible();
 
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-  expect(overflow).toBeLessThanOrEqual(0);
+  await faraScrollOrizontal(page);
 
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);

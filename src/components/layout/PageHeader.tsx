@@ -29,7 +29,7 @@ export default function PageHeader({ title, subtitle, action, badge }: Props) {
           </Typography>
         ) : null}
       </Box>
-      {action ? <Box sx={{ flexShrink: 0 }}>{action}</Box> : null}
+      {action ? <Box sx={{ flexShrink: { sm: 0 }, maxWidth: '100%' }}>{action}</Box> : null}
     </Box>
   );
 }

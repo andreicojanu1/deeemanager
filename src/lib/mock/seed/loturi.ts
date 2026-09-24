@@ -231,7 +231,7 @@ function genereazaIstoric(recenteAcceptate: Lot[]): Lot[] {
       id: `LOT-2026-${String(355 + n).padStart(4, '0')}`,
       organizatieId: ORG_DEMO,
       status: 'ACCEPTAT' as const,
-      punctLucru: 'Chiajna',
+      punctLucru: k % 3 === 2 ? 'Bragadiru' : 'Chiajna',
       dataPreluarii: zi(plus(trimis, -30)),
       linii: [linie(t.sub[k % t.sub.length], x.kg, buc.get(x) ?? 1)],
       creatLa: plus(trimis, -2),

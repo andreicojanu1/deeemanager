@@ -262,6 +262,10 @@ export const theme = createTheme({
         },
       },
     },
+    MuiSelect: {
+      // Opțiunea cu valoarea „” („Toate …”) se vede și când nimic nu e ales.
+      defaultProps: { displayEmpty: true },
+    },
     MuiTextField: {
       defaultProps: { variant: 'outlined', fullWidth: true },
     },

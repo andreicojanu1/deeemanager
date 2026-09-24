@@ -49,7 +49,12 @@ export default function ResponsiveTable<T>({ columns, rows, rowKey, rowHref, lab
 
   return (
     <>
-      <Box sx={{ display: { xs: 'none', sm: 'block' }, overflowX: 'auto' }}>
+      <Box
+        sx={{ display: { xs: 'none', sm: 'block' }, overflowX: 'auto' }}
+        tabIndex={0}
+        role="region"
+        aria-label={label}
+      >
         <Table aria-label={label}>
           <TableHead>
             <TableRow>
