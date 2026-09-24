@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
 import IconButton from '@mui/material/IconButton';
@@ -34,12 +34,29 @@ export default function Vizualizator({ documente, selectat, onSelect, zona, valo
   const [zoom, setZoom] = useState(1);
   const [meniu, setMeniu] = useState<HTMLElement | null>(null);
   const zonaRef = useRef<HTMLDivElement>(null);
+  const suprafataRef = useRef<HTMLDivElement>(null);
+  const zoomAtins = useRef(false);
+
+  // La deschidere, pagina se potrivește la lățimea disponibilă (important pe telefon).
+  useEffect(() => {
+    const el = suprafataRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => {
+      if (zoomAtins.current) return;
+      const disponibil = e.contentRect.width;
+      setZoom(Math.min(1, Math.max(ZOOM_MIN / 1.5, Math.floor((disponibil / PAGINA.latime) * 10) / 10)));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const doc = documente.find((d) => d.id === selectat) ?? documente[0];
   const idx = documente.findIndex((d) => d.id === doc?.id);
   const vizibile = documente.slice(0, TABURI_VIZIBILE);
   const restul = documente.slice(TABURI_VIZIBILE);
-  const schimbaZoom = (d: number) =>
-    setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round((z + d) * 10) / 10)));
+  const schimbaZoom = (d: number) => {
+    zoomAtins.current = true;
+    setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN / 1.5, Math.round((z + d) * 10) / 10)));
+  };
 
   if (!doc) {
     return (
@@ -90,7 +107,7 @@ export default function Vizualizator({ documente, selectat, onSelect, zona, valo
             display: 'flex',
             gap: 1,
             flexWrap: 'nowrap',
-            flex: 1,
+            flex: { xs: '1 1 100%', sm: 1 },
             minWidth: 0,
             overflowX: 'auto',
             '& > *': { flexShrink: 0, whiteSpace: 'nowrap' },
@@ -183,6 +200,7 @@ export default function Vizualizator({ documente, selectat, onSelect, zona, valo
       </Box>
 
       <Box
+        ref={suprafataRef}
         tabIndex={0}
         role="region"
         aria-label={`${doc.denumire}, previzualizare`}
@@ -196,9 +214,10 @@ export default function Vizualizator({ documente, selectat, onSelect, zona, valo
           overflow: 'auto',
           minHeight: 420,
           maxHeight: { lg: 620 },
-          p: 6,
+          p: { xs: 3, sm: 6 },
           display: 'flex',
-          justifyContent: 'center',
+          // „safe” păstrează marginea stângă accesibilă când pagina e mai lată decât zona.
+          justifyContent: 'safe center',
           alignItems: 'flex-start',
         }}
       >
