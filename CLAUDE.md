@@ -35,7 +35,7 @@ Versiunile live (opționale) ale design system-ului și mockup-urilor: https://c
 
 ## 3. Stack
 
-- **Template:** Vuexy, versiunea Next.js (TypeScript), pornind de la starter-kit, NU de la full-version. Înainte de orice cod, citește structura starter-kit-ului și documentația lui și lucrează pe convențiile lui (temă, layout, meniu). Din full-version copiezi doar componentele de care ai nevoie.
+- **UI:** Next.js + MUI, fără template (decizie 24.09.2026: Vuexy nu e disponibil). Tema se construiește din `design/tokens.json`. Referința de componente este Material 3 Design Kit (Figma), adaptată la tokeni. Vuexy poate fi adăugat ulterior; nu-l căuta în repo. Planul detaliat: `docs/PLAN-FAZA-A.md`.
 - **Framework:** Next.js App Router, TypeScript strict. Server Components implicit; client components doar unde e interacțiune.
 - **Date:** PostgreSQL + Prisma. Local: Docker Compose (Postgres + MinIO).
 - **Auth:** Auth.js (credentials: email + parolă, hash argon2), sesiuni server-side, roluri `COLECTOR` și `ADMIN`.
@@ -49,7 +49,7 @@ Secretele stau DOAR în `.env` (există `.env.example` fără valori). Nu scrie 
 
 ## 4. Design — „Precizie calmă”
 
-### Tokens (se definesc în tema Vuexy / MUI, nu inline)
+### Tokens (se definesc în tema MUI, nu inline)
 
 | Token | Valoare | Folosire |
 |---|---|---|
@@ -80,7 +80,7 @@ Pentru text de status se folosesc variantele `-text`, nu fill-urile. Magenta din
 - **Adâncime:** borduri, nu umbre. Umbra doar pe elemente care plutesc (meniuri, modale, toast).
 - **Iconuri:** Tabler Icons, 18–24 px, stroke 1.5. Categorii: 1 frigider, 2 monitor, 3 bec, 4 mașină de spălat, 5 cuptor cu microunde, 6 telefon.
 - **Animații:** 150–200 ms, doar funcționale (deschidere drawer/modal, apariție toast, tranziție între pașii wizard-ului, expand în arbore). Respectă `prefers-reduced-motion`. Fără animații decorative.
-- **Mod întunecat:** dezactivat în MVP. Scoate și customizer-ul de temă și aplicațiile demo Vuexy.
+- **Mod întunecat:** dezactivat în MVP. Fără customizer de temă și fără aplicații demo.
 
 ### Principii de interfață
 
