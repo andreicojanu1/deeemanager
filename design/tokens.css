@@ -1,0 +1,36 @@
+:root {
+  --petrol: #0F4C5C;
+  --petrol-hover: #0B3C49;
+  --petrol-soft: #E3EEF0;
+  --on-petrol: #FFFFFF;
+  --ink: #0F1A1F;
+  --ink-muted: #5B6770;
+  --line: #E3E7EA;
+  --line-strong: #C9D0D5;
+  --canvas: #F6F7F7;
+  --surface: #FFFFFF;
+  --success: #1E8E5A;
+  --success-text: #17724A;
+  --success-soft: #E6F4EC;
+  --warning: #B7791F;
+  --warning-text: #8A5A12;
+  --warning-soft: #FBF1DF;
+  --danger: #C53030;
+  --danger-soft: #FBE9E9;
+  --ai: #4F46E5;
+  --ai-soft: #EEEDFC;
+  --highlight: #FFF3B0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-pill: 999px;
+  --shadow-overlay: 0 8px 24px rgba(15, 26, 31, 0.12);
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-logo: Montserrat, Inter, system-ui, sans-serif;
+}
