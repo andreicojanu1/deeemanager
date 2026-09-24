@@ -262,6 +262,23 @@ export const theme = createTheme({
         },
       },
     },
+    MuiAutocomplete: {
+      styleOverrides: {
+        // Aceeași înălțime (40 px, 44 px pe tactil) ca restul câmpurilor.
+        root: {
+          '& .MuiOutlinedInput-root': { paddingTop: 0, paddingBottom: 0, paddingLeft: px(space[3]) },
+          '& .MuiOutlinedInput-root .MuiAutocomplete-input': {
+            paddingTop: px(10),
+            paddingBottom: px(10),
+            paddingLeft: 0,
+          },
+          [coarse]: {
+            '& .MuiOutlinedInput-root .MuiAutocomplete-input': { paddingTop: px(12), paddingBottom: px(12) },
+          },
+        },
+        paper: { borderRadius: radius.md, border: `1px solid ${color.line}` },
+      },
+    },
     MuiSelect: {
       // Opțiunea cu valoarea „” („Toate …”) se vede și când nimic nu e ales.
       defaultProps: { displayEmpty: true },

@@ -1,3 +1,4 @@
+import type { Ciorna } from '@/lib/domain/ciorna';
 import type { FiltreLoturi } from '@/lib/domain/filtre';
 import type { CodDeseu, LotDetaliu } from '@/lib/domain/lot';
 import type { NodArbore, PaginaLoturi } from '@/lib/domain/loturi';
@@ -46,6 +47,23 @@ export interface DataLayer {
     anuleaza(ctx: DataContext, id: string, motiv: string): Promise<void>;
     inlocuiesteDocument(ctx: DataContext, id: string, documentId: string, numeFisier: string): Promise<void>;
     retrimite(ctx: DataContext, id: string): Promise<void>;
+    /** Ciorna editabilă a unui lot (Ciornă sau Necesită completări); null altfel. */
+    ciorna(ctx: DataContext, id: string): Promise<Ciorna | null>;
+    /** Salvează ciorna; la prima salvare lotul primește ID-ul LOT-AAAA-NNNN. */
+    salveazaCiorna(ctx: DataContext, ciorna: Ciorna): Promise<{ id: string; salvatLa: string }>;
+    /** Validează ciorna completă și trimite lotul la verificare. */
+    trimite(ctx: DataContext, id: string): Promise<void>;
+  };
+  organizatie: {
+    autorizatie(
+      ctx: DataContext,
+    ): Promise<{ numar: string; coduriAutorizate: string[]; puncteLucru: string[] }>;
+    /** Codurile de deșeu permise pe categorie (din taxonomie). */
+    coduriPeCategorie(): Promise<Record<number, string[]>>;
+  };
+  anaf: {
+    /** Datele firmei după CUI; null dacă nu există. */
+    cauta(cui: string): Promise<{ denumire: string; adresa: string } | null>;
   };
   panou: {
     colector(ctx: DataContext): Promise<PanouColector>;

@@ -10,7 +10,12 @@ import {
   stocPeCategorii,
   ultimeleLoturi,
 } from '@/lib/domain/panou';
-import { poateAnula, poateRetrimite } from '@/lib/domain/tranzitii';
+import { CiornaSchema, poateFiTrimisa, type Ciorna } from '@/lib/domain/ciorna';
+import { cuiValid, normalizeazaCui } from '@/lib/domain/identificatori';
+import { poateAnula, poateEdita, poateRetrimite } from '@/lib/domain/tranzitii';
+import { ciornaDinDetaliu, contextValidare, detaliuDinCiorna, liniiDinCiorna } from './ciorne';
+import { CODURI_PE_CATEGORIE } from './seed/coduri';
+import { ANAF, AUTORIZATII } from './seed/organizatii';
 import { CODURI_DESEU } from './seed/coduri';
 import { detaliuLot } from './seed/detalii';
 import { DOCUMENTE_ORGANIZATIE, LOTURI, MOCK_NOW } from './seed/loturi';
@@ -36,6 +41,12 @@ const numeColector = (id: string) => NUME_ORGANIZATIE[id] ?? id;
  * modifică în memorie. Se pierd la repornirea serverului.
  */
 const detalii = new Map<string, LotDetaliu>();
+const ciorne = new Map<string, Ciorna>();
+
+function idNou(): string {
+  const max = Math.max(...LOTURI.map((l) => Number(l.id.slice(-4))));
+  return `LOT-2026-${String(max + 1).padStart(4, '0')}`;
+}
 
 function gaseste(ctx: DataContext, id: string) {
   const lot = vizibilePentru(ctx, LOTURI).find((l) => l.id === id);
@@ -126,6 +137,64 @@ export const mockData: DataLayer = {
         detaliu: numeFisier,
       });
     },
+    async ciorna(ctx, id) {
+      const g = gaseste(ctx, id);
+      if (!g || !poateEdita(g.lot.status)) return null;
+      return ciorne.get(id) ?? ciornaDinDetaliu(g.detaliu);
+    },
+    async salveazaCiorna(ctx, intrare) {
+      if (ctx.rol !== 'COLECTOR') throw new AccesInterzisError();
+      const c = CiornaSchema.parse(intrare);
+      const salvatLa = acumIso();
+      let lot = c.id ? vizibilePentru(ctx, LOTURI).find((l) => l.id === c.id) : undefined;
+      if (c.id && !lot) throw new AccesInterzisError();
+      if (lot && !poateEdita(lot.status)) throw new Error('Lotul nu mai poate fi editat.');
+      if (!lot) {
+        lot = {
+          id: idNou(),
+          organizatieId: ctx.organizatieId,
+          status: 'CIORNA',
+          punctLucru: c.punctLucru,
+          dataPreluarii: c.dataPreluarii,
+          linii: [],
+          creatLa: salvatLa,
+        };
+        LOTURI.push(lot);
+      }
+      lot.punctLucru = c.punctLucru;
+      lot.dataPreluarii = c.dataPreluarii;
+      lot.linii = liniiDinCiorna(c);
+      const salvata = { ...c, id: lot.id };
+      ciorne.set(lot.id, salvata);
+      const istoric = detalii.get(lot.id)?.istoric ?? [
+        { la: salvatLa, autor: 'Tu', actiune: 'Ai creat ciorna lotului' },
+      ];
+      detalii.set(lot.id, detaliuDinCiorna(lot, salvata, istoric));
+      return { id: lot.id, salvatLa };
+    },
+    async trimite(ctx, id) {
+      const g = gaseste(ctx, id);
+      if (!g || ctx.rol !== 'COLECTOR') throw new AccesInterzisError();
+      if (!poateEdita(g.lot.status)) throw new Error('Lotul a fost deja trimis.');
+      const c = ciorne.get(id);
+      if (!c) throw new Error('Salvează întâi ciorna.');
+      const lipsa = poateFiTrimisa(c, contextValidare(ctx.organizatieId));
+      if (lipsa) throw new Error(lipsa);
+      const retrimis = g.lot.status === 'NECESITA_COMPLETARI';
+      g.lot.status = 'IN_VERIFICARE';
+      g.lot.trimisLa = acumIso();
+      g.lot.motiv = undefined;
+      if (retrimis) g.lot.aFostCompletat = true;
+      const istoric = [
+        {
+          la: g.lot.trimisLa,
+          autor: 'Tu',
+          actiune: retrimis ? 'Ai retrimis lotul la verificare' : 'Ai trimis lotul la verificare',
+        },
+        ...g.detaliu.istoric,
+      ];
+      detalii.set(id, detaliuDinCiorna(g.lot, c, istoric));
+    },
     async retrimite(ctx, id) {
       const g = gaseste(ctx, id);
       if (!g || ctx.rol !== 'COLECTOR') throw new AccesInterzisError();
@@ -140,6 +209,28 @@ export const mockData: DataLayer = {
         autor: 'Tu',
         actiune: 'Ai retrimis lotul la verificare',
       });
+    },
+  },
+
+  organizatie: {
+    async autorizatie(ctx) {
+      const a = AUTORIZATII[ctx.organizatieId];
+      return a
+        ? { numar: a.numar, coduriAutorizate: a.coduriAutorizate, puncteLucru: a.puncteLucru }
+        : { numar: '', coduriAutorizate: [], puncteLucru: [] };
+    },
+    async coduriPeCategorie() {
+      return CODURI_PE_CATEGORIE;
+    },
+  },
+
+  anaf: {
+    async cauta(cui) {
+      await new Promise((r) => setTimeout(r, process.env.NODE_ENV === 'test' ? 0 : 600));
+      const n = normalizeazaCui(cui);
+      if (!n || !cuiValid(n)) return null;
+      // Mock: CUI-urile necunoscute, dar valide, primesc o firmă demo.
+      return ANAF[n] ?? { denumire: `Firmă demo ${n} SRL`, adresa: '' };
     },
   },
 

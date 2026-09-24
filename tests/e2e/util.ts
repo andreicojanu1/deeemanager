@@ -12,6 +12,8 @@ export async function faraScrollOrizontal(page: Page) {
 }
 
 export async function faraProblemeA11y(page: Page) {
+  // Contrastul se măsoară după ce animațiile de intrare (150–200 ms) s-au terminat.
+  await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running'));
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
 }

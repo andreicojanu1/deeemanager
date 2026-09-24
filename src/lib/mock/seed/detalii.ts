@@ -223,7 +223,7 @@ function detaliu0418(lot: Lot): LotDetaliu {
       id: 'LOT-2026-0418-s2',
       tip: 'COLECTOR_PLATFORMA',
       denumire: 'EcoRec Ilfov SRL',
-      cui: 'RO 30118902',
+      cui: 'RO 30118904',
       cuiVerificatAnaf: true,
       adresaRidicare: 'Șos. Oltenitei 208, Popești-Leordeni',
       contract: 'Transfer T-0331',

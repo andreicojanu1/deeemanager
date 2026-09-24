@@ -26,7 +26,7 @@ import {
   IconPlayerPlayFilled,
   IconX,
 } from '@tabler/icons-react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import AiExtracted from '@/components/ui/AiExtracted';
 import EmptyState from '@/components/ui/EmptyState';
 import StatusBadge from '@/components/ui/StatusBadge';
@@ -55,7 +55,6 @@ type CheieTab = (typeof TABURI)[number]['cheie'];
 type Props = { lot: LotDetaliu; subcategorii: Record<string, Pick<Subcategorie, 'denumire'>> };
 
 export default function LotTabs({ lot, subcategorii }: Props) {
-  const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const initial = (params.get('tab') as CheieTab) ?? 'rezumat';
@@ -67,7 +66,8 @@ export default function LotTabs({ lot, subcategorii }: Props) {
     if (t === 'rezumat') sp.delete('tab');
     else sp.set('tab', t);
     const qs = sp.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    // Doar adresa se schimbă; tab-urile sunt deja în pagină, fără cerere la server.
+    window.history.replaceState(null, '', qs ? `${pathname}?${qs}` : pathname);
   };
 
   return (

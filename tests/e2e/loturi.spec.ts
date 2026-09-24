@@ -9,7 +9,10 @@ test.beforeEach(async ({ page }) => {
 
 test('lista de loturi: filtre în URL, chip-uri, paginare', async ({ page }) => {
   await page.goto('/loturi');
-  await expect(page.getByText('46 loturi')).toBeVisible();
+  // Alte teste pot crea loturi pe același server, deci nu fixăm totalul.
+  const total = page.getByRole('status').filter({ hasText: /^\d+ loturi$/ });
+  await expect(total).toBeVisible();
+  const initial = await total.textContent();
   await faraScrollOrizontal(page);
   await faraProblemeA11y(page);
 
@@ -19,11 +22,11 @@ test('lista de loturi: filtre în URL, chip-uri, paginare', async ({ page }) => 
   await expect(chip).toBeVisible();
   await page.getByRole('button', { name: 'Șterge filtrele' }).click();
   await expect(page).toHaveURL(/\/loturi$/);
-  await expect(page.getByText('46 loturi')).toBeVisible();
+  await expect(total).toHaveText(initial!);
 
   await page.getByRole('link', { name: 'Pagina următoare' }).click();
   await expect(page).toHaveURL(/pagina=2/);
-  await expect(page.getByText('Pagina 2 din 2')).toBeVisible();
+  await expect(page.getByText(/^Pagina 2 din \d+$/)).toBeVisible();
 });
 
 test('căutarea filtrează lista', async ({ page }) => {

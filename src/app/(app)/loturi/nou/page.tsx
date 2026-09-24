@@ -1,17 +1,15 @@
 import type { Metadata } from 'next';
-import PageHeader from '@/components/layout/PageHeader';
-import InLucru from '@/components/ui/InLucru';
+import { taxonomieWizard } from '@/features/wizard/incarca';
+import Wizard from '@/features/wizard/Wizard';
+import { contextDin } from '@/lib/data';
+import { ciornaNoua } from '@/lib/domain/ciorna';
+import { requireSession } from '@/lib/session/server';
 
 export const metadata: Metadata = { title: 'Lot nou' };
 
-export default function Page() {
-  return (
-    <>
-      <PageHeader title="Lot nou" subtitle="Încarcă un lot în 3 pași: informații, documente, confirmare." />
-      <InLucru
-        pas={6}
-        descriere="Wizard-ul de lot cu autosalvare și lista de documente cerute (mockup 02 și 02b)."
-      />
-    </>
-  );
+export default async function LotNouPage() {
+  const session = await requireSession();
+  const tx = await taxonomieWizard(contextDin(session));
+  const azi = new Date().toISOString().slice(0, 10);
+  return <Wizard initial={ciornaNoua(azi, tx.puncteLucru[0] ?? '')} tx={tx} />;
 }

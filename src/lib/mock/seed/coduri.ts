@@ -36,3 +36,17 @@ export const CODURI_DESEU: CodDeseu[] = [
 ];
 
 export const esteCodPericulos = (cod: string) => cod.trim().endsWith('*');
+
+/**
+ * Codurile care au sens pentru fiecare categorie. Aproximare pentru date demo.
+ * TODO(validare-client): maparea subcategorie → coduri permise o stabilește clientul
+ * sau consultantul de mediu (vezi docs/NOTE-MATERIALE-CLIENT.md).
+ */
+export const CODURI_PE_CATEGORIE: Record<number, string[]> = {
+  1: ['20 01 23*', '16 02 11*', '20 01 35*', '20 01 36'],
+  2: ['20 01 35*', '16 02 13*', '20 01 36', '16 02 14'],
+  3: ['20 01 21*', '20 01 36'],
+  4: ['20 01 35*', '16 02 13*', '20 01 36', '16 02 14'],
+  5: ['20 01 35*', '20 01 36', '16 02 14'],
+  6: ['20 01 35*', '20 01 36', '16 02 14'],
+};
