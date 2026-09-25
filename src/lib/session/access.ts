@@ -12,7 +12,7 @@ const AUTH_PREFIXES = [
 ];
 
 /** Pagini accesibile oricui, cu sau fără sesiune. */
-const PUBLIC_PREFIXES = ['/acces-interzis', '/eroare', '/dev'];
+const PUBLIC_PREFIXES = ['/acces-interzis', '/eroare'];
 
 /** Pagini pe care le poate vedea un colector cu contul neactivat. */
 const NEACTIVAT_ALLOWED = ['/onboarding', '/cont'];

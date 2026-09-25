@@ -17,6 +17,28 @@ export default function AppShell({ session, nav, children }: Props) {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100dvh', bgcolor: color.canvas }}>
+      {/* Primul element din ordinea Tab: sare peste meniu, direct la conținut. */}
+      <Box
+        component="a"
+        href="#continut"
+        sx={{
+          position: 'fixed',
+          left: 16,
+          top: 16,
+          zIndex: 2000,
+          px: 4,
+          py: 3,
+          borderRadius: '8px',
+          bgcolor: color.petrol,
+          color: `${color.surface} !important`,
+          fontWeight: 500,
+          textDecoration: 'none',
+          transform: 'translateY(-200%)',
+          '&:focus-visible': { transform: 'none', outlineColor: color.ink },
+        }}
+      >
+        Sari la conținut
+      </Box>
       <Box
         sx={{
           display: { xs: 'none', md: 'block' },
@@ -45,6 +67,7 @@ export default function AppShell({ session, nav, children }: Props) {
         <Box
           component="main"
           id="continut"
+          tabIndex={-1}
           sx={{
             flex: 1,
             px: { xs: 4, md: 8 },
@@ -52,6 +75,7 @@ export default function AppShell({ session, nav, children }: Props) {
             display: 'flex',
             flexDirection: 'column',
             gap: 6,
+            '&:focus': { outline: 'none' },
           }}
         >
           {children}

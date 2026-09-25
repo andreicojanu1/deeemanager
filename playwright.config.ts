@@ -18,7 +18,7 @@ export default defineConfig({
   ],
   webServer: {
     command: `npm run build && npm run start -- -p ${PORT}`,
-    url: `http://localhost:${PORT}/dev/tema`,
+    url: `http://localhost:${PORT}/autentificare`,
     reuseExistingServer: !process.env.CI,
     timeout: 240_000,
   },

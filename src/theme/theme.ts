@@ -125,6 +125,8 @@ export const theme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        // Bara de sus (64 px) și barele de acțiune lipite jos nu acoperă elementul focusat (WCAG 2.4.11).
+        html: { scrollPaddingTop: '80px', scrollPaddingBottom: '112px' },
         body: {
           backgroundColor: color.canvas,
           color: color.ink,
@@ -150,6 +152,15 @@ export const theme = createTheme({
     MuiButtonBase: {
       // Ripple-ul e o animație decorativă; focusul se vede prin inelul petrol.
       defaultProps: { disableRipple: true, disableTouchRipple: true },
+      styleOverrides: {
+        // ButtonBase pune `outline: 0`, care anulează regula globală `:focus-visible`.
+        root: {
+          '&.Mui-focusVisible, &:focus-visible': {
+            outline: `2px solid ${color.petrol}`,
+            outlineOffset: '2px',
+          },
+        },
+      },
     },
     MuiButton: {
       defaultProps: { disableElevation: true },
