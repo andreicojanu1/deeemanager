@@ -1,7 +1,7 @@
 import type { Session } from '@/lib/session/types';
 
 export type NavIcon =
-  'panou' | 'loturi' | 'organizatie' | 'verificari' | 'colectori' | 'taxonomie' | 'activare';
+  'panou' | 'loturi' | 'organizatie' | 'verificari' | 'colectori' | 'taxonomie' | 'activare' | 'documentatie';
 
 export type NavItem = {
   href: string;
@@ -11,6 +11,15 @@ export type NavItem = {
   badge?: number;
   /** Activ doar pe potrivire exactă (pentru rădăcini precum /admin). */
   exact?: boolean;
+  /** Afișat jos în meniu, deasupra cardului organizației (ex. Documentație). */
+  jos?: boolean;
+};
+
+const DOCUMENTATIE: NavItem = {
+  href: '/documentatie',
+  label: 'Documentație',
+  icon: 'documentatie',
+  jos: true,
 };
 
 export function navFor(session: Session, counts: { verificariInCoada: number }): NavItem[] {
@@ -24,12 +33,13 @@ export function navFor(session: Session, counts: { verificariInCoada: number }):
     ];
   }
   if (session.statusCont === 'NEACTIVAT') {
-    return [{ href: '/onboarding', label: 'Activare cont', icon: 'activare' }];
+    return [{ href: '/onboarding', label: 'Activare cont', icon: 'activare' }, DOCUMENTATIE];
   }
   return [
     { href: '/panou', label: 'Panou', icon: 'panou' },
     { href: '/loturi', label: 'Loturi', icon: 'loturi' },
     { href: '/organizatie', label: 'Organizație', icon: 'organizatie' },
+    DOCUMENTATIE,
   ];
 }
 
@@ -49,6 +59,7 @@ const SEGMENT_LABEL: Record<string, string> = {
   verificari: 'Coada de verificare',
   colectori: 'Colectori',
   taxonomie: 'Taxonomie',
+  documentatie: 'Documentație',
 };
 
 export type Crumb = { label: string; href: string };

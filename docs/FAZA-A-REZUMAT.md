@@ -30,6 +30,11 @@ Interfața completă pe date mock. Fiecare ecran din `CLAUDE.md` §5 există, cu
   - fonturi servite local.
 - Izolarea datelor între colectori e testată în `tests/unit` (loturi, raport, onboarding, colectori).
 
+## Documentația pentru colector
+
+- `/documentatie`: e în meniul colectorului, jos, deasupra cardului organizației. O văd și colectorii care își activează contul; adminul nu.
+- Capturile din `public/documentatie/` se regenerează cu `npm run capturi:documentatie`, cu serverul pornit pe portul 3200.
+
 ## Abateri de la mockup-uri și spec
 
 - Graficul de statusuri de pe panou folosește cifrele calculate din date, nu cele desenate în mockup; graficele sunt componente proprii, nu ApexCharts.

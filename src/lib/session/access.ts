@@ -15,7 +15,7 @@ const AUTH_PREFIXES = [
 const PUBLIC_PREFIXES = ['/acces-interzis', '/eroare'];
 
 /** Pagini pe care le poate vedea un colector cu contul neactivat. */
-const NEACTIVAT_ALLOWED = ['/onboarding', '/cont'];
+const NEACTIVAT_ALLOWED = ['/onboarding', '/cont', '/documentatie'];
 
 /** Pagini comune ambelor roluri. */
 const SHARED = ['/cont'];

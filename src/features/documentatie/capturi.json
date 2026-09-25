@@ -1,0 +1,66 @@
+{
+  "activare-extras-ai": {
+    "latime": 1617,
+    "inaltime": 486
+  },
+  "activare": {
+    "latime": 1788,
+    "inaltime": 1254
+  },
+  "cont": {
+    "latime": 1788,
+    "inaltime": 960
+  },
+  "lot-completari": {
+    "latime": 1788,
+    "inaltime": 840
+  },
+  "lot-nou-documente-cerute": {
+    "latime": 480,
+    "inaltime": 1103
+  },
+  "lot-nou-mobil": {
+    "latime": 780,
+    "inaltime": 1688
+  },
+  "lot-nou-pas1": {
+    "latime": 1788,
+    "inaltime": 1254
+  },
+  "lot-nou-pas2": {
+    "latime": 1788,
+    "inaltime": 1254
+  },
+  "lot-nou-provenienta": {
+    "latime": 1692,
+    "inaltime": 797
+  },
+  "lot-verificare": {
+    "latime": 1788,
+    "inaltime": 1140
+  },
+  "loturi-categorii": {
+    "latime": 1788,
+    "inaltime": 1050
+  },
+  "loturi-lista": {
+    "latime": 1788,
+    "inaltime": 1140
+  },
+  "organizatie-documente": {
+    "latime": 1692,
+    "inaltime": 1259
+  },
+  "panou-de-rezolvat": {
+    "latime": 1692,
+    "inaltime": 324
+  },
+  "panou-stoc": {
+    "latime": 1692,
+    "inaltime": 390
+  },
+  "panou": {
+    "latime": 2160,
+    "inaltime": 1350
+  }
+}

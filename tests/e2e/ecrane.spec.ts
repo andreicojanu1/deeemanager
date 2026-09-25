@@ -36,11 +36,12 @@ const ECRANE: { persona: Persona; rute: string[] }[] = [
       '/loturi/LOT-2026-0412',
       '/loturi/LOT-2026-0416/editare',
       '/organizatie',
+      '/documentatie',
       '/cont',
       '/pagina-care-nu-exista',
     ],
   },
-  { persona: 'colector-neactivat', rute: ['/onboarding', '/cont'] },
+  { persona: 'colector-neactivat', rute: ['/onboarding', '/documentatie', '/cont'] },
   {
     persona: 'admin',
     rute: [

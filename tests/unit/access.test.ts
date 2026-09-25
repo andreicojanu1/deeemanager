@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { breadcrumbsFor } from '@/components/layout/nav';
+import { breadcrumbsFor, navFor } from '@/components/layout/nav';
 import { decideAccess } from '@/lib/session/access';
 import { PERSONAS } from '@/lib/session/personas';
+import type { Session } from '@/lib/session/types';
 
 const colector = PERSONAS['colector-activ'];
 const neactivat = PERSONAS['colector-neactivat'];
@@ -59,5 +60,20 @@ describe('breadcrumb', () => {
       'LOT-2026-0418',
     ]);
     expect(breadcrumbsFor('/admin').map((c) => c.label)).toEqual(['Panou']);
+  });
+});
+
+describe('documentația', () => {
+  it('e deschisă colectorilor, inclusiv celor care își activează contul, și închisă adminului', () => {
+    expect(decideAccess('/documentatie', colector)).toEqual({ type: 'allow' });
+    expect(decideAccess('/documentatie', neactivat)).toEqual({ type: 'allow' });
+    expect(decideAccess('/documentatie', admin)).toEqual({ type: 'redirect', to: '/acces-interzis' });
+  });
+
+  it('apare jos în meniul colectorului, nu și la admin', () => {
+    const jos = (s: Session) => navFor(s, { verificariInCoada: 0 }).filter((i) => i.jos);
+    expect(jos(colector).map((i) => i.href)).toEqual(['/documentatie']);
+    expect(jos(neactivat).map((i) => i.href)).toEqual(['/documentatie']);
+    expect(jos(admin)).toEqual([]);
   });
 });
