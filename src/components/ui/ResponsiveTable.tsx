@@ -32,7 +32,7 @@ type Props<T> = {
   rows: T[];
   rowKey: (row: T) => string;
   /** Tot rândul e clicabil și duce la detaliu. */
-  rowHref?: (row: T) => string;
+  rowHref?: (row: T) => string | undefined;
   /** Eticheta accesibilă a tabelului. */
   label: string;
 };

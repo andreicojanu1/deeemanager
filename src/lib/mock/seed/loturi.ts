@@ -1,4 +1,4 @@
-import type { DocumentOrganizatie, LinieLot, Lot } from '@/lib/domain/lot';
+import type { LinieLot, Lot } from '@/lib/domain/lot';
 import { subcategorie } from './taxonomie';
 
 /**
@@ -334,31 +334,4 @@ export const LOTURI: Lot[] = [
   ...genereazaIstoric(RECENTE.filter((l) => l.status === 'ACCEPTAT')),
   ...ALT_COLECTOR,
   ...COADA,
-];
-
-export const DOCUMENTE_ORGANIZATIE: DocumentOrganizatie[] = [
-  {
-    id: 'doc-visa-2026',
-    organizatieId: ORG_DEMO,
-    tip: 'VISA_ANUALA',
-    denumire: 'Visa anuală a autorizației de mediu',
-    valabilPana: '2026-10-12',
-    status: 'APROBAT',
-  },
-  {
-    id: 'doc-autorizatie',
-    organizatieId: ORG_DEMO,
-    tip: 'AUTORIZATIE_MEDIU',
-    denumire: 'Autorizația de mediu',
-    valabilPana: '2029-03-31',
-    status: 'APROBAT',
-  },
-  {
-    id: 'doc-alt-visa',
-    organizatieId: ORG_ALT,
-    tip: 'VISA_ANUALA',
-    denumire: 'Visa anuală a autorizației de mediu',
-    valabilPana: '2026-09-30',
-    status: 'APROBAT',
-  },
 ];

@@ -271,7 +271,8 @@ function Linie({ linie: l, index: i }: { linie: LinieCiorna; index: number }) {
       >
         <Autocomplete
           id={`${p}.subcategorie`}
-          options={tx.subcategorii}
+          // Subcategoriile dezactivate din taxonomie nu se mai pot alege la loturi noi.
+          options={tx.subcategorii.filter((s) => s.activa !== false || s.cod === sub?.cod)}
           groupBy={(s) => {
             const c = categorie(s);
             return c ? `${c.cod}. ${c.denumire}` : '';
@@ -337,7 +338,7 @@ function Linie({ linie: l, index: i }: { linie: LinieCiorna; index: number }) {
           slotProps={{ select: { renderValue: (v) => (v ? String(v) : 'Alege codul') } }}
         >
           {tx.coduri
-            .filter((c) => permise.includes(c.cod))
+            .filter((c) => permise.includes(c.cod) && (c.activ !== false || c.cod === l.codDeseu))
             .map((c) => {
               const autorizat = tx.coduriAutorizate.includes(c.cod);
               return (

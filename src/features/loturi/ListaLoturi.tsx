@@ -93,7 +93,10 @@ export default function ListaLoturi({ pagina, filtrate, colectori, hrefBaza, hre
         columns={coloane}
         rows={pagina.randuri}
         rowKey={(r) => r.id}
-        rowHref={(r) => `${hrefBaza}${r.id}`}
+        rowHref={(r) =>
+          // Adminul deschide raportul de verificare; loturile anulate nu au raport.
+          colectori && r.status === 'ANULAT' ? undefined : `${hrefBaza}${r.id}`
+        }
       />
       <Paginare pagina={pagina.pagina} pagini={pagina.pagini} />
     </Card>

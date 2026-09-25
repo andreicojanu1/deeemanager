@@ -1,7 +1,7 @@
 import { AccesInterzisError, doarAdmin, vizibilePentru } from '@/lib/data/access';
 import type { DataContext, DataLayer } from '@/lib/data/types';
 import { arbore, filtreaza, pagineaza } from '@/lib/domain/loturi';
-import type { LotDetaliu } from '@/lib/domain/lot';
+import type { DocumentOrganizatie, LotDetaliu } from '@/lib/domain/lot';
 import {
   deRezolvat,
   intrariPeLuna,
@@ -17,9 +17,13 @@ import { ciornaDinDetaliu, contextValidare, detaliuDinCiorna, liniiDinCiorna } f
 import { CODURI_PE_CATEGORIE } from './seed/coduri';
 import { ANAF, AUTORIZATII, NUME_ORGANIZATIE } from './seed/organizatii';
 import { CODURI_DESEU } from './seed/coduri';
-import { detaliuLot, verificareDin } from './seed/detalii';
+import { REGULI, detaliuLot, verificareDin } from './seed/detalii';
 import { randCoada, sorteazaCoada } from '@/lib/domain/coada';
-import { construiesteRaport } from './raport';
+import { CONFIG_REGULI, construiesteRaport } from './raport';
+import { DENUMIRI_DOCUMENTE, colectori, inlocuiesteDocumentOrganizatie } from './colectori';
+import { conturiDeVerificat } from '@/lib/domain/colectori';
+import { ModificareRegulaSchema } from '@/lib/domain/reguli';
+import { ModificareSubcategorieSchema } from '@/lib/domain/taxonomie';
 import { documentValid, extrasAutorizatieMock, onboardingPentru, salveazaOnboarding } from './onboarding';
 import {
   DateFirmaSchema,
@@ -28,26 +32,21 @@ import {
   poateTrimite,
   ceLipseste,
 } from '@/lib/domain/onboarding';
-import { DOCUMENTE_ORGANIZATIE, LOTURI, MOCK_NOW } from './seed/loturi';
+import { LOTURI } from './seed/loturi';
 import { CATEGORII, SUBCATEGORII, subcategorie } from './seed/taxonomie';
 
 /** Latență simulată, ca skeleton-urile să fie vizibile în Faza A. */
 const LATENTA_MS = process.env.NODE_ENV === 'test' ? 0 : 250;
 const asteapta = () => new Promise((r) => setTimeout(r, LATENTA_MS));
 
-/**
- * Ceasul datelor mock: pornește la MOCK_NOW (24.09.2026, 10:00) și avansează în timp
- * real, ca vechimea în coadă și deciziile să fie coerente cu datele seed.
- */
-const PORNIRE = Date.now();
-export const now = () => new Date(new Date(MOCK_NOW).getTime() + (Date.now() - PORNIRE));
-const acumIso = () => {
-  const d = now();
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
-};
+export { now } from './ceas';
+import { acumIso, now } from './ceas';
 
 const tx = { categorii: CATEGORII, subcategorie };
+
+/** Listele de loturi: adminul nu vede ciornele colectorilor, doar ce a fost trimis. */
+const loturiVizibile = (ctx: DataContext) =>
+  vizibilePentru(ctx, LOTURI).filter((l) => ctx.rol !== 'ADMIN' || l.status !== 'CIORNA');
 
 const numeColector = (id: string) => NUME_ORGANIZATIE[id] ?? id;
 
@@ -83,13 +82,73 @@ export const mockData: DataLayer = {
     async coduri() {
       return CODURI_DESEU;
     },
+    async modificaSubcategorie(ctx, cod, modificare) {
+      doarAdmin(ctx);
+      const sc = SUBCATEGORII.find((x) => x.cod === cod);
+      if (!sc) throw new Error('Subcategoria nu există.');
+      Object.assign(sc, ModificareSubcategorieSchema.parse(modificare));
+    },
+    async modificaCod(ctx, cod, modificare) {
+      doarAdmin(ctx);
+      const c = CODURI_DESEU.find((x) => x.cod === cod);
+      if (!c) throw new Error('Codul nu există.');
+      c.activ = modificare.activ;
+    },
+    async reguli(ctx) {
+      doarAdmin(ctx);
+      return REGULI.map((r) => ({
+        cod: r.cod,
+        nume: r.nume,
+        activa: CONFIG_REGULI[r.cod]?.activa !== false,
+        severitate: CONFIG_REGULI[r.cod]?.severitate ?? 'BLOCANT',
+        toleranta: CONFIG_REGULI[r.cod]?.toleranta,
+      }));
+    },
+    async modificaRegula(ctx, cod, modificare) {
+      doarAdmin(ctx);
+      const c = CONFIG_REGULI[cod];
+      if (!c) throw new Error('Regula nu există.');
+      const m = ModificareRegulaSchema.parse(modificare);
+      if (m.toleranta !== undefined && c.toleranta === undefined) {
+        throw new Error('Regula nu are prag numeric.');
+      }
+      Object.assign(c, m);
+    },
+  },
+
+  colectori,
+
+  admin: {
+    async panou(ctx) {
+      doarAdmin(ctx);
+      const coada = await mockData.verificari.coada(ctx);
+      const toti = await colectori.list(ctx, {});
+      return {
+        colectoriActivi: toti.filter((c) => c.status === 'ACTIV').length,
+        inCoada: coada.deVerificat.length,
+        deciseAzi: coada.deciseAzi.length,
+        timpMediuDecizieMin: coada.timpMediuDecizieMin,
+        intrari: intrariPeLuna(LOTURI, now()),
+        conturiDeVerificat: conturiDeVerificat(toti),
+      };
+    },
   },
 
   panou: {
     async colector(ctx) {
       await asteapta();
       const loturi = vizibilePentru(ctx, LOTURI);
-      const documente = vizibilePentru(ctx, DOCUMENTE_ORGANIZATIE);
+      // Documentele firmei vin din dosarul de activare: o visă reînnoită nu mai apare aici.
+      const dosar = onboardingPentru(ctx.organizatieId, now());
+      const documente: DocumentOrganizatie[] = dosar.documente.map((d) => ({
+        id: `doc-${dosar.organizatieId}-${d.tip}`,
+        organizatieId: dosar.organizatieId,
+        tip: d.tip,
+        denumire: DENUMIRI_DOCUMENTE[d.tip],
+        valabilPana: d.stare === 'APROBAT' ? d.valabilPana : undefined,
+        status: d.stare,
+        motivRespingere: d.motiv,
+      }));
       const acum = now();
       return {
         deRezolvat: deRezolvat(loturi, documente, acum),
@@ -104,12 +163,12 @@ export const mockData: DataLayer = {
   loturi: {
     async list(ctx, filtre) {
       await asteapta();
-      const loturi = filtreaza(vizibilePentru(ctx, LOTURI), filtre, tx, numeColector);
+      const loturi = filtreaza(loturiVizibile(ctx), filtre, tx, numeColector);
       return pagineaza(loturi, filtre.pagina ?? 1, tx);
     },
     async arbore(ctx, filtre) {
       await asteapta();
-      return arbore(filtreaza(vizibilePentru(ctx, LOTURI), filtre, tx, numeColector), tx);
+      return arbore(filtreaza(loturiVizibile(ctx), filtre, tx, numeColector), tx);
     },
     async optiuni(ctx) {
       const loturi = vizibilePentru(ctx, LOTURI);
@@ -240,11 +299,14 @@ export const mockData: DataLayer = {
     async coduriPeCategorie() {
       return CODURI_PE_CATEGORIE;
     },
+    async inlocuiesteDocument(ctx, tip, fisier) {
+      await inlocuiesteDocumentOrganizatie(ctx, tip, fisier);
+    },
   },
 
   onboarding: {
     async get(ctx) {
-      return structuredClone(onboardingPentru(ctx.organizatieId));
+      return structuredClone(onboardingPentru(ctx.organizatieId, now()));
     },
     async salveazaFirma(ctx, firma) {
       const o = onboardingPentru(ctx.organizatieId);

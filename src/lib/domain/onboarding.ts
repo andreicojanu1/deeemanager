@@ -31,8 +31,8 @@ export const DOCUMENTE_ONBOARDING = [
   },
   {
     tip: 'VISA_ANUALA',
-    denumire: 'Visa anuală',
-    explicatie: 'Visa autorizației de mediu pentru anul în curs.',
+    denumire: 'Visa anuală a autorizației de mediu',
+    explicatie: 'Pentru anul în curs.',
   },
   {
     tip: 'SIATD_DEEE',
@@ -70,6 +70,8 @@ export type DocumentOnboarding = {
   fisier?: { nume: string; marime: string; incarcatLa: string };
   /** La respingere: ce are de făcut colectorul. */
   motiv?: string;
+  /** Documentele cu termen (autorizație, visă): data până la care sunt valabile. */
+  valabilPana?: string;
 };
 
 /** Datele extrase de AI din autorizația de mediu; colectorul le confirmă sau le corectează. */
@@ -116,8 +118,11 @@ export type Onboarding = {
   firma: DateFirma;
   documente: DocumentOnboarding[];
   autorizatie: ExtrasAutorizatie | null;
+  creatLa: string;
   trimisLa?: string;
   salvatLa?: string;
+  /** Vizita în teren, marcată manual de administrator. */
+  vizita?: { programataLa?: string; efectuataLa?: string; de?: string; observatii?: string };
 };
 
 export const FIRMA_GOALA: DateFirma = {
@@ -130,9 +135,10 @@ export const FIRMA_GOALA: DateFirma = {
   iban: '',
 };
 
-export function onboardingNou(organizatieId: string): Onboarding {
+export function onboardingNou(organizatieId: string, creatLa = new Date().toISOString()): Onboarding {
   return {
     organizatieId,
+    creatLa,
     etapa: 'DOCUMENTE',
     firma: { ...FIRMA_GOALA },
     documente: DOCUMENTE_ONBOARDING.map((d) => ({ tip: d.tip, stare: 'LIPSA' })),

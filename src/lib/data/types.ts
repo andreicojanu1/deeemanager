@@ -18,6 +18,9 @@ import type {
   Onboarding,
   TipDocumentOnboarding,
 } from '@/lib/domain/onboarding';
+import type { FiltreColectori, RandColector, Utilizator } from '@/lib/domain/colectori';
+import type { ConfigRegula, ModificareRegula } from '@/lib/domain/reguli';
+import type { ModificareSubcategorie } from '@/lib/domain/taxonomie';
 import type { Rol } from '@/lib/session/types';
 
 /**
@@ -25,6 +28,23 @@ import type { Rol } from '@/lib/session/types';
  * ce date vede apelantul (izolare multi-tenant).
  */
 export type DataContext = { organizatieId: string; rol: Rol };
+
+export type PanouAdmin = {
+  colectoriActivi: number;
+  inCoada: number;
+  deciseAzi: number;
+  timpMediuDecizieMin: number | null;
+  intrari: IntrareLuna[];
+  conturiDeVerificat: RandColector[];
+};
+
+export type DetaliuColector = {
+  rand: RandColector;
+  onboarding: Onboarding;
+  utilizatori: Utilizator[];
+  /** Ora curentă a stratului de date (ex. data implicită a vizitei). */
+  acum: string;
+};
 
 export type PanouColector = {
   deRezolvat: ElementDeRezolvat[];
@@ -43,6 +63,42 @@ export interface DataLayer {
     categorii(): Promise<Categorie[]>;
     subcategorii(): Promise<Subcategorie[]>;
     coduri(): Promise<CodDeseu[]>;
+    /** Doar admin: editare inline; dezactivare în loc de ștergere. */
+    modificaSubcategorie(ctx: DataContext, cod: string, modificare: ModificareSubcategorie): Promise<void>;
+    modificaCod(ctx: DataContext, cod: string, modificare: { activ: boolean }): Promise<void>;
+    /** Regulile de verificare, cu severitatea și toleranța configurabile. */
+    reguli(ctx: DataContext): Promise<ConfigRegula[]>;
+    modificaRegula(ctx: DataContext, cod: string, modificare: ModificareRegula): Promise<void>;
+  };
+  colectori: {
+    /** Doar admin. */
+    list(ctx: DataContext, filtre: FiltreColectori): Promise<RandColector[]>;
+    /** Admin: orice colector; colector: doar organizația proprie. */
+    get(ctx: DataContext, id: string): Promise<DetaliuColector | null>;
+    /** Doar admin: aprobă un document de onboarding sau cere reîncărcarea lui, cu motiv. */
+    decideDocument(
+      ctx: DataContext,
+      id: string,
+      tip: TipDocumentOnboarding,
+      decizie: 'APROBAT' | 'RESPINS',
+      motiv?: string,
+    ): Promise<void>;
+    programeazaVizita(ctx: DataContext, id: string, data: string): Promise<void>;
+    /** Marchează vizita ca efectuată și activează contul. */
+    finalizeazaVizita(
+      ctx: DataContext,
+      id: string,
+      vizita: { data: string; observatii: string },
+      de: string,
+    ): Promise<void>;
+    /** Doar admin: creează firma și trimite invitația administratorului ei. */
+    invita(
+      ctx: DataContext,
+      date: { denumire: string; cui: string; nume: string; email: string },
+    ): Promise<{ id: string }>;
+  };
+  admin: {
+    panou(ctx: DataContext): Promise<PanouAdmin>;
   };
   loturi: {
     list(ctx: DataContext, filtre: FiltreLoturi): Promise<PaginaLoturi>;
@@ -68,6 +124,12 @@ export interface DataLayer {
     ): Promise<{ numar: string; coduriAutorizate: string[]; puncteLucru: string[] }>;
     /** Codurile de deșeu permise pe categorie (din taxonomie). */
     coduriPeCategorie(): Promise<Record<number, string[]>>;
+    /** Un document al firmei active (ex. visa anuală reînnoită) merge la verificare. */
+    inlocuiesteDocument(
+      ctx: DataContext,
+      tip: TipDocumentOnboarding,
+      fisier: { nume: string; marime: string },
+    ): Promise<void>;
   };
   onboarding: {
     /** Dosarul de activare al organizației din sesiune. */

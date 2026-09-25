@@ -6,7 +6,7 @@ import { homeFor, PERSONAS, SESSION_COOKIE, type PersonaKey } from './personas';
 
 export async function intraCaPersona(formData: FormData) {
   const key = formData.get('persona');
-  if (typeof key !== 'string' || !(key in PERSONAS)) redirect('/autentificare');
+  if (typeof key !== 'string' || !Object.hasOwn(PERSONAS, key)) redirect('/autentificare');
   const store = await cookies();
   store.set(SESSION_COOKIE, key, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 8 });
   redirect(homeFor(PERSONAS[key as PersonaKey]));

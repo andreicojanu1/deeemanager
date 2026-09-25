@@ -16,21 +16,23 @@ import { subcategorie } from './seed/taxonomie';
  * TODO(validare-client): severitățile și toleranțele nu sunt încă validate de client;
  * în Faza C se editează din /admin/taxonomie → Reguli de verificare.
  */
-export const CONFIG_REGULI: Record<string, { severitate: Severitate; toleranta?: number }> = {
-  R01: { severitate: 'BLOCANT' },
-  R02: { severitate: 'BLOCANT', toleranta: 0.01 },
-  R03: { severitate: 'BLOCANT' },
-  R04: { severitate: 'BLOCANT' },
-  R05: { severitate: 'BLOCANT' },
-  R06: { severitate: 'BLOCANT' },
-  R07: { severitate: 'BLOCANT' },
-  R08: { severitate: 'AVERTISMENT' },
-  R09: { severitate: 'AVERTISMENT' },
-  R10: { severitate: 'BLOCANT' },
-  R11: { severitate: 'BLOCANT' },
-  R12: { severitate: 'AVERTISMENT' },
-  R13: { severitate: 'AVERTISMENT' },
-};
+export const CONFIG_REGULI: Record<string, { activa?: boolean; severitate: Severitate; toleranta?: number }> =
+  {
+    R01: { severitate: 'BLOCANT' },
+    R02: { severitate: 'BLOCANT', toleranta: 0.01 },
+    R03: { severitate: 'BLOCANT' },
+    R04: { severitate: 'BLOCANT' },
+    R05: { severitate: 'BLOCANT' },
+    R06: { severitate: 'BLOCANT' },
+    R07: { severitate: 'BLOCANT' },
+    R08: { severitate: 'AVERTISMENT' },
+    // Abaterea acceptată față de greutatea tipică pe bucată a subcategoriei.
+    R09: { severitate: 'AVERTISMENT', toleranta: 0.3 },
+    R10: { severitate: 'BLOCANT' },
+    R11: { severitate: 'BLOCANT' },
+    R12: { severitate: 'AVERTISMENT' },
+    R13: { severitate: 'AVERTISMENT' },
+  };
 
 /** Cântăririle din tichetele demo care diferă de declarație (mockup 03). */
 const TICHETE: Record<string, { brut: number; tara: number }> = {
@@ -211,16 +213,18 @@ export function construiesteRaport(lot: LotDetaliu, colector: string) {
     return r.rezumat;
   };
 
-  const reguli: RegulaRaport[] = (lot.verificare?.rezultate ?? []).map((r) => {
-    const v = valori(r.cod);
-    return {
-      ...r,
-      severitate: CONFIG_REGULI[r.cod]?.severitate ?? 'BLOCANT',
-      valori: v,
-      mesaj: mesaj(r),
-      documenteImplicate: [...new Set(v.map((x) => x.documentId).filter((x): x is string => Boolean(x)))],
-    };
-  });
+  const reguli: RegulaRaport[] = (lot.verificare?.rezultate ?? [])
+    .filter((r) => CONFIG_REGULI[r.cod]?.activa !== false)
+    .map((r) => {
+      const v = valori(r.cod);
+      return {
+        ...r,
+        severitate: CONFIG_REGULI[r.cod]?.severitate ?? 'BLOCANT',
+        valori: v,
+        mesaj: mesaj(r),
+        documenteImplicate: [...new Set(v.map((x) => x.documentId).filter((x): x is string => Boolean(x)))],
+      };
+    });
 
   return { documente, reguli };
 }

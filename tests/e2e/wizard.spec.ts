@@ -117,6 +117,8 @@ test('pe telefon: pașii încap pe ecran, iar la documente lista e ecranul princ
   await expect(page.getByText(/Cod periculos declarat: mai ai nevoie de/)).toBeVisible();
   const camera = page.getByRole('button', { name: 'Fotografiază: Tichet de cântar' });
   await expect(camera).toBeVisible();
+  // Tranziția dintre pași (150–200 ms) scalează conținutul; măsurăm după ea.
+  await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running'));
   const box = await camera.boundingBox();
   expect(box!.height).toBeGreaterThanOrEqual(44);
   await faraScrollOrizontal(page);

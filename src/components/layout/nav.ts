@@ -64,7 +64,10 @@ export function breadcrumbsFor(pathname: string): Crumb[] {
   parts.forEach((part, i) => {
     if (part === 'admin') return;
     const href = `/${parts.slice(0, i + 1).join('/')}`;
-    crumbs.push({ label: SEGMENT_LABEL[part] ?? decodeURIComponent(part), href });
+    // ID-urile tehnice ale colectorilor nu spun nimic în breadcrumb; titlul paginii are numele.
+    const label =
+      parts[i - 1] === 'colectori' ? 'Detaliu colector' : (SEGMENT_LABEL[part] ?? decodeURIComponent(part));
+    crumbs.push({ label, href });
   });
   return crumbs;
 }

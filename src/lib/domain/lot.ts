@@ -47,6 +47,8 @@ export type CodDeseu = {
   cod: string;
   denumire: string;
   periculos: boolean;
+  /** Codurile dezactivate nu mai pot fi alese în loturi noi. */
+  activ?: boolean;
 };
 
 export type TipSursa = 'GENERATOR' | 'COLECTOR_PLATFORMA' | 'PERSOANA_FIZICA';

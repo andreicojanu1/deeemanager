@@ -20,7 +20,13 @@ function scala(max: number): number[] {
 
 const INALTIME = 200;
 
-export default function IntrariChart({ intrari }: { intrari: IntrareLuna[] }) {
+export default function IntrariChart({
+  intrari,
+  descriere = 'Kilograme din loturile acceptate',
+}: {
+  intrari: IntrareLuna[];
+  descriere?: string;
+}) {
   const curenta = intrari.at(-1);
   const anterioara = intrari.at(-2);
   const ticks = scala(Math.max(...intrari.map((i) => i.kg)));
@@ -38,7 +44,7 @@ export default function IntrariChart({ intrari }: { intrari: IntrareLuna[] }) {
               Intrări acceptate pe lună
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Kilograme din loturile acceptate, ultimele {intrari.length} luni
+              {descriere}, ultimele {intrari.length} luni
             </Typography>
           </Box>
           {curenta ? (
